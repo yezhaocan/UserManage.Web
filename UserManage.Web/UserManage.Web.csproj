@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Properties\PublishProfiles\CustomProfile.pubxml" />
+    <None Remove="Properties\PublishProfiles\CustomProfile1.pubxml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EPPlus.Core" Version="1.5.2" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Areas\System\Views\Module\Index-js.cshtml" />
+    <None Include="Areas\System\Views\Module\Index.cshtml" />
+    <None Include="Areas\System\Views\Role\Index-js.cshtml" />
+    <None Include="Areas\System\Views\Role\Index.cshtml" />
+    <None Include="Areas\distribution\Views\WeChat\Index-js.cshtml" />
+    <None Include="Areas\distribution\Views\WeChat\Index.cshtml" />
+    <None Include="Areas\System\Views\_ViewImports.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetEx\DotNetEx.csproj" />
+    <ProjectReference Include="..\UserManage.Base\UserManage.Base.csproj" />
+    <ProjectReference Include="..\UserManage.Data\UserManage.Data.csproj" />
+    <ProjectReference Include="..\UserManage.Service\UserManage.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+    <Folder Include="weblog\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="configs\nlog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties configs_4appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
+
+
+</Project>

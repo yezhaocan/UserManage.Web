@@ -1,0 +1,126 @@
+﻿<script>
+    var _vm;
+    $(function () {
+        var vm = new ViewModel();
+        _vm = vm;
+        ko.applyBindings(vm);
+        vm.Init();
+    });
+
+    function ViewModel() {
+        var me = this;
+        ViewModelBase.call(me);
+        vmExtend.call(me);
+        me.Dialog = new Dialog(me);
+
+        me.NewDialog = new NewDialog();
+        me.OpenNewDialog = function () {
+            me.NewDialog.Open(me.DataTable.SelectedModel());
+        }
+    }
+    function vmExtend() {
+        var me = this;
+
+        me.Init = function () {
+            me.LoadModels();
+        }
+        me.LoadModels = function (page) {
+            me.DataTable.SelectedModel(null);
+            var data = me.SearchModel();
+            data.page = page || 1;
+            $ace.get("@this.Href("~/distribution/MyCustomer/GetAllCustomerModels")", data, function (result) {
+                me.DataTable.SetPagedData(result.Data);
+            }
+          );
+        }
+    }
+    function Dialog(vm) {
+        var me = this;
+        DialogBase.call(me);
+
+        me.OnOpen = function () {
+            var model = me.EditModel();
+            if (model) {
+                var bindModel = $ko.toJS(model);
+                me.Model(bindModel);
+            }
+            else {
+                me.Model({ IsEnabled: true });
+            }
+        }
+        me.OnSave = function () {
+            var model = me.Model();
+
+            if (!$('#form1').formValid()) {
+                return false;
+            }
+            if (me.EditModel()) {
+                $ace.post("@this.Href("~/distribution/MyCustomer/Transfer")", model, function (result) {
+                    $ace.msg(result.Msg);
+                    me.Close();
+                    vm.LoadModels();
+                }
+                );
+            }
+            else {
+                $ace.post("@this.Href("~/distribution/MyCustomer/AddCustomer")", model, function (result) {
+                    $ace.msg(result.Msg);
+                    me.Close();
+                    vm.LoadModels();
+                }
+                );
+            }
+        }
+    }
+    function NewDialog() {
+        var me = this;
+
+        DialogBase.call(me);
+        me.Title("查看账号");
+
+        me.OnOpen = function () {
+            var model = me.EditModel();
+            if (!model) {
+                throw new Error();
+            }
+            var data = { AccountName: model.AccountName };
+            var CustomerName = model.CustomerName();
+            $ace.get("@this.Href("~/distribution/MyCustomer/GetCustomerByAccountName")", data, function (result) {
+                if (result.Data.length > 0) {
+                    var html = "";
+                    for (var i = 0; i < result.Data.length; i++) {
+                        html += " <tr>" +
+                            "<td>" + (i + 1) + "</td> " +
+                            "<td>" + result.Data[i].AccountName + "</td>" +
+                            "<td>" + result.Data[i].CustomerName + "</td> " +
+                            "<td>" + result.Data[i].Mobile + "</td> " +
+                            "<td>";
+                        if (result.Data[i].CustomerName.trim() != CustomerName.trim()) {
+                            html += "<button class='btn btn-danger' onclick='Chose(\"" + model.Id() + "\",\"" + result.Data[i].Id + "\")'><i class='fa fa- plus'></i>选择</button>";
+                        }
+                        else {
+                            html += "<button class='btn btn-primary'><i class='fa fa- plus'></i>已选</button>";
+                        }
+                        html +="</td></tr>";
+                    }
+                    $("#tbody").html(html);
+                }
+                else {
+                    $ace.msg("该账号不存在多个客户");
+                    me.Close();
+                }
+            });
+        }
+        me.OnSave = function () {
+            me.Close();
+        }
+    }
+
+    function Chose(customerId, dataId) {
+        var data = { customerId: customerId, dataId: dataId }
+        $ace.get("@this.Href("~/distribution/MyCustomer/BundledCustomer")", data, function (result) {
+            $ace.msg(result.Msg);
+            me.Close();
+        });
+    }
+</script>

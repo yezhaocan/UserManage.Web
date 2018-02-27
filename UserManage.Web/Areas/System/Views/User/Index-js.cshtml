@@ -1,0 +1,213 @@
+﻿<script>
+
+    var _vm;
+    $(function () {
+        var vm = new ViewModel();
+        _vm = vm;
+        ko.applyBindings(vm);
+        vm.Init();
+    });
+
+    function ViewModel() {
+        var me = this;
+        ViewModelBase.call(me);
+        vmExtend.call(me);
+
+        me.DeleteUrl = "@this.Href("~/System/User/Delete")";
+
+        me.Dialog = new Dialog(me);
+        me.RevisePasswordDialog = new RevisePasswordDialog();
+        me.NewDialog = new NewDialog();
+        me.NewDialog2 = new NewDialog2();
+
+        me.OpenRevisePasswordDialog = function () {
+            me.RevisePasswordDialog.Open(me.DataTable.SelectedModel());
+        }
+        me.OpenNewDialog = function () {
+            me.NewDialog.Open(me.DataTable.SelectedModel());
+        }
+        me.OpenNewDialog2 = function () {
+            me.NewDialog2.Open(me.DataTable.SelectedModel());
+        }
+    }
+    function vmExtend() {
+        var me = this;
+
+        me.Init = function () {
+            me.LoadModels();
+        }
+
+        me.LoadModels = function (page) {
+            me.DataTable.SelectedModel(null);
+            var data = me.SearchModel();
+            data.page = page || 1;
+            $ace.get("@this.Href("~/System/User/GetModels")", data, function (result) {
+                me.DataTable.SetPagedData(result.Data);
+            }
+          );
+        }
+    }
+
+    function Dialog(vm) {
+        var me = this;
+        DialogBase.call(me);
+
+        me.OnOpen = function () {
+            var model = me.EditModel();
+            if (model) {
+                var bindModel = $ko.toJS(model);
+                me.Model(bindModel);
+            }
+            else {
+                me.Model({ IsEnabled: true });
+            }
+        }
+        me.OnSave = function () {
+            var model = me.Model();
+
+            if (!$('#form1').formValid()) {
+                return false;
+            }
+            if (me.EditModel()) {
+                $ace.post("@this.Href("~/System/User/Update")", model, function (result) {
+                    $ace.msg(result.Msg);
+                    me.Close();
+                    vm.LoadModels();
+                }
+               );
+            }
+            else {
+                $ace.post("@this.Href("~/System/User/Add")", model, function (result) {
+                    $ace.msg(result.Msg);
+                    me.Close();
+                    vm.LoadModels();
+                }
+             );
+            }
+        }
+    }
+
+    function RevisePasswordDialog() {
+        var me = this;
+        DialogBase.call(me);
+        me.Title("重置密码");
+
+
+        me.OnOpen = function () {
+            var model = me.EditModel();
+            if (!model) {
+                throw new Error();
+            }
+
+            var bindModel = $ko.toJS(model);
+            var m = {};
+            m.Id = bindModel.Id;
+            m.UserName = bindModel.UserName;
+            m.RealName = bindModel.RealName;
+
+            me.Model(m);
+        }
+        me.OnSave = function () {
+            if (!$('#RevisePasswordForm').formValid()) {
+                return false;
+            }
+
+            var model = me.Model();
+            var pwd = model.Password;
+            var data = { userId: model.Id, newPassword: pwd };
+            $ace.post("@this.Href("~/System/User/RevisePassword")", data, function (result) {
+                $ace.msg(result.Msg);
+                me.Close();
+            }
+           );
+        }
+    }
+
+    function NewDialog() {
+        var me = this;
+        DialogBase.call(me);
+        me.Title("客服微信");
+
+        me.OnOpen = function () {
+            var model = me.EditModel();
+            if (!model) {
+                throw new Error();
+            }
+
+            var bindModel = $ko.toJS(model);
+            var m = {};
+            m.Id = bindModel.Id;
+            var data = { userId: model.Id };
+            me.Model(m);
+
+            $ace.get("@this.Href("~/System/User/GetWeChats")", data, function (result) {
+                if (result.Data.length > 0) {
+                    var html = "";
+                    for (var i = 0; i < result.Data.length; i++) {
+                        html += " <tr>" +
+                            "<td>" + (i + 1) + "</td> " +
+                            "<td>" + result.Data[i].WeChatId + "</td>" +
+                            "<td>" + result.Data[i].WeChatNick + "</td> " +
+                            "<td>" +
+                            "<button class='btn btn-danger' onclick='Unbundled(\"" + result.Data[i].WeChatId+"\")'><i class='fa fa- plus'></i>解绑</button>" +
+                            "</td> " +
+                            "</tr>";
+                    }
+                    $("#tbody").html(html);
+                }
+                else {
+                    $ace.msg("该账号未绑定客服微信");
+                    me.Close();
+                }
+            });
+        }
+        me.OnSave = function () {
+            me.Close();
+        }
+    }
+
+    function NewDialog2(vm) {
+        var me = this;
+        DialogBase.call(me);
+
+        me.OnOpen = function () {
+            var model = me.EditModel();
+            if (!model) {
+                throw new Error();
+            }
+
+            var bindModel = $ko.toJS(model);
+            var m = {};
+            m.Id = bindModel.Id;
+            me.Model(m);
+        }
+        me.OnSave = function () {
+            if (!$('#Bind').formValid()) {
+                return false;
+            }
+
+            var model = me.Model();
+            var OperationsWeChatId = model.OperationsWeChatId;
+            var data = { userId: model.Id, OperationsWeChatId: OperationsWeChatId };
+            $ace.post("@this.Href("~/System/User/BindWeChat")", data, function (result) {
+                $ace.msg(result.Msg);
+                me.Close();
+            }
+            );
+        }
+    }
+    function Unbundled(weChatId) {
+        var data = { WeChatId: weChatId }
+        $.ajax({
+            url: "../User/UnbundledWeChat",
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (result) {
+                $ace.msg(result.Msg);
+                me.Close();
+            }
+
+        });
+     }
+</script>

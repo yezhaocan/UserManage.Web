@@ -1,0 +1,85 @@
+﻿@using UserManage.Entity.distribution
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutPage.cshtml";
+}
+@this.Partial("Index-js")
+<div class="wrapper">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#basicInfo" data-toggle="tab">基本信息</a></li>
+        <li><a href="#modifyPassword" data-toggle="tab">密码修改</a></li>
+    </ul>
+    <div class="tab-content" style="padding-top: 5px;">
+        <div id="basicInfo" class="tab-pane active" style="padding: 15px;">
+            <form id="userInfo">
+                <ul class="pop-list">
+                    <li>
+                        <label>账户</label>
+                        <input type="text" class="form-control" disabled="disabled" data-bind="value:User().UserName" />
+                    </li>
+                    <li class="formValue">
+                        <label>姓名</label>
+                        <input id="RealName" name="RealName" type="text" class="form-control required" placeholder="请输入姓名" data-bind="value:User().RealName" />
+                    </li>
+                    <li>
+                        <label>角色</label>
+                        <input type="text" disabled="disabled" class="form-control" value="@this.ViewBag.UserInfo.RoleName" />
+                    </li>
+                    <li>
+                        <label>介绍</label>
+                        <textarea class="form-control" style="height: 60px;" data-bind="value:User().Description"></textarea>
+                    </li>
+                    @{ var w=ViewBag.WeChat as List<OperationsWeChat>;}
+                    @if (w != null || w.Count != 0)
+                    {
+
+                        <li class="line">
+                            <h4><label>客服微信</label></h4>
+                        </li>
+
+                    }
+                    @foreach (var item in w)
+                    {
+                        <li>
+                            <label>微信@(w.IndexOf(item)+1)</label>
+                            <input type="text" class="form-control"value="@item.WeChatId" disabled="disabled" />
+                        </li>
+                    }
+                    <li>
+                        <div style="padding-left: 115px;">
+                            <a class="btn btn-primary" data-bind="click:SaveUserInfo"><i class="fa fa-save" style="margin-right:5px;"></i>确认修改</a>
+                        </div>
+                    </li>
+                </ul>
+            </form>
+        </div>
+        <div id="modifyPassword" class="tab-pane" style="padding: 15px;">
+            <form id="changePasswordForm">
+                <ul class="pop-list">
+                    <li>
+                        <label>用户名</label>
+                        <input type="text" class="form-control" disabled="disabled" data-bind="value:User().UserName" />
+                    </li>
+                    <li class="formValue">
+                        <label>旧密码</label>
+                        <input type="password" class="form-control required" data-bind="value:PasswordModel().OldPassword" />
+                    </li>
+                    <li class="formValue">
+                        <label>新密码</label>
+                        <input type="password" class="form-control required" data-bind="value:PasswordModel().NewPassword" />
+                    </li>
+                    <li class="formValue">
+                        <label>确认新密码</label>
+                        <input type="password" class="form-control required" data-bind="value:PasswordModel().NewPasswordConfirm" />
+                    </li>
+                    <li>
+                        <div style="padding-left: 115px;">
+                            <a class="btn btn-primary" data-bind="click:ChangePassword"><i class="fa fa-save" style="margin-right:5px;"></i>确认修改</a>
+                        </div>
+                    </li>
+                </ul>
+            </form>
+        </div>
+    </div>
+</div>
+
